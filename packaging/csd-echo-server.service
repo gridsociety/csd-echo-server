@@ -1,0 +1,39 @@
+[Unit]
+Description=CSD echo server
+Documentation=https://github.com/gridsociety/csd-echo-server
+After=multi-user.target
+
+[Service]
+Type=exec
+ExecStart=/opt/csd-echo-server/bin/csd-echo-server --config /etc/csd-echo-server.toml
+Restart=always
+RestartSec=5
+
+# An unprivileged throwaway user that is a member of the group owning the
+# serial port. Use "uucp" instead of "dialout" on distributions that use it.
+DynamicUser=yes
+SupplementaryGroups=dialout
+
+# The service talks to one serial port and nothing else.
+DevicePolicy=closed
+DeviceAllow=char-ttyUSB rw
+DeviceAllow=char-ttyACM rw
+DeviceAllow=char-ttyS rw
+PrivateNetwork=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

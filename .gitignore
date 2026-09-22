@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python virtual environments
+.venv/
+venv/
+
+# Packaging and build artifacts
+build/
+dist/
+*.egg-info/
+
+# Test and coverage output
+.coverage
+coverage.xml
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+*~
+
+# Local runtime files
+*.log
+csd-echo-server.toml

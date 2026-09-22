@@ -1,0 +1,65 @@
+# Configuration for csd-echo-server. Every key is optional: what is not set here
+# keeps the built-in default shown as the commented value.
+
+[serial]
+# Serial port the modem is attached to. A /dev/serial/by-id/... path survives
+# reboots and USB re-enumeration, unlike /dev/ttyUSB0.
+port = "/dev/ttyUSB0"
+# baudrate = 115200
+# Enable only if the cable between host and modem carries RTS and CTS.
+# rtscts = false
+
+[modem]
+# Argument of AT+CBST: the CSD bearer service to request, as
+# <speed>,<name>,<connection element>. 7,0,1 is 9600 bps V.32, asynchronous,
+# non-transparent (RLP), which is what most networks still carry. Run
+# `AT+CBST=?` on your modem to see what it supports, and leave this out to keep
+# whatever the modem has stored.
+# bearer = "7,0,1"
+
+# Argument of AT+CSNS, which tells the modem how to treat an incoming call that
+# carries no bearer element. SIMs without a separate data number produce exactly
+# that, and the default of 4 (data) is what makes those calls answerable.
+# Use -1 to leave whatever the modem has stored.
+# single_numbering = 4
+
+# Pin the modem to the serial port speed with AT+IPR. A modem left on
+# autobauding has to resynchronise on every command and drops some of them,
+# which looks like a modem that answers only every other time. Turn this off for
+# modems that do not implement AT+IPR.
+# fix_bit_rate = true
+
+# Ask the modem for the caller number (AT+CLIP=1) and the extended incoming call
+# report (AT+CRC=1). Both feed the information shown to the caller.
+# caller_id = true
+# extended_ring = true
+
+# Extra AT commands appended to the init sequence, for modem-specific settings.
+# init_commands = ["AT\\Q3"]
+
+# Seconds spent collecting call details before answering, and how long to wait
+# for CONNECT after ATA.
+# answer_delay = 0.5
+# connect_timeout = 60.0
+# Seconds before reopening the port after a modem error.
+# retry_delay = 5.0
+
+[call]
+# Hang up on calls the network signalled as voice or fax instead of answering
+# them. Off by default, because a SIM without a separate data number signals CSD
+# calls as voice, and industrial CSD modems answer them anyway. Turn it on if the
+# number also receives ordinary voice calls that you would rather not pick up.
+# reject_voice_calls = false
+
+# Hang up after this many seconds without data from the caller. 0 disables it.
+# idle_timeout = 300.0
+# Hang up after this many seconds in any case. 0 disables it.
+# max_duration = 3600.0
+
+[echo]
+welcome = "This is a CSD echo server."
+# Append the call and protocol summary below the welcome message.
+# show_call_info = true
+# "crlf" turns every incoming line ending into CRLF, which is what terminal
+# programs expect. "raw" echoes the received bytes unchanged.
+# newline = "crlf"
