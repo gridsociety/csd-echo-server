@@ -121,9 +121,14 @@ class EchoServer:
                 continue
             log.info("incoming call: caller=%s type=%s", call.caller or "unknown",
                      call.bearer or "not signalled")
-            if self.config.call.ignore_voice_calls and not call.is_data:
-                log.info("call signalled as %s, letting it ring", call.bearer)
-                self._let_it_ring()
+            action = self.config.call.voice_calls
+            if action != "accept" and not call.is_data:
+                if action == "ignore":
+                    log.info("call signalled as %s, letting it ring", call.bearer)
+                    self._let_it_ring()
+                else:
+                    log.info("call signalled as %s, rejecting", call.bearer)
+                    self.modem.hangup()
                 continue
             try:
                 self.modem.answer(call)

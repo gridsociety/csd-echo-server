@@ -9,6 +9,9 @@ from typing import Any
 
 DEFAULT_WELCOME = "This is a CSD echo server."
 
+#: What call.voice_calls accepts.
+VOICE_CALL_ACTIONS = ("accept", "reject", "ignore")
+
 #: Commands sent after the modem-level options, before the server starts listening.
 DEFAULT_EXTRA_INIT: tuple[str, ...] = ()
 
@@ -55,12 +58,17 @@ class ModemConfig:
 class CallConfig:
     """Which calls are answered, and the limits applied once they are."""
 
-    #: Leave calls the network signalled as voice or fax ringing instead of
-    #: answering them: the server neither picks up nor hangs up, so the caller
-    #: hears the ringback and reaches voicemail as they would on a module that is
-    #: simply not answering. Off by default: industrial CSD modems answer whatever
-    #: comes in, which is also what AT+CSNS is there to make possible.
-    ignore_voice_calls: bool = False
+    #: What to do with a call the network signalled as voice or fax.
+    #:
+    #: "accept"  answer it like any other call, the way industrial CSD modems do
+    #:           and the only thing that works on a SIM that signals data calls
+    #:           as voice. A call that really is a voice call comes up without a
+    #:           data carrier and is hung up again.
+    #: "reject"  hang up at once, so the caller hears the line as unavailable.
+    #: "ignore"  neither answer nor hang up: the caller keeps hearing the
+    #:           ringback and reaches voicemail, as on a module that is simply
+    #:           not answering.
+    voice_calls: str = "accept"
     #: Hang up after this many seconds without data from the caller (0 disables).
     idle_timeout: float = 300.0
     #: Hang up after this many seconds regardless of activity (0 disables).
@@ -136,5 +144,9 @@ class Config:
             raise ConfigError("serial.baudrate must be positive")
         if self.modem.single_numbering not in (-1, 0, 2, 4):
             raise ConfigError("modem.single_numbering must be -1 (unset), 0, 2 or 4")
+        if self.call.voice_calls not in VOICE_CALL_ACTIONS:
+            raise ConfigError(
+                f"call.voice_calls must be one of {', '.join(sorted(VOICE_CALL_ACTIONS))}"
+            )
         if self.call.idle_timeout < 0 or self.call.max_duration < 0:
             raise ConfigError("call timeouts cannot be negative")

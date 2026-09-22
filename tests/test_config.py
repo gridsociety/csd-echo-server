@@ -19,8 +19,17 @@ def test_from_mapping_overrides_only_what_is_given():
 
 
 def test_voice_calls_are_answered_by_default():
-    assert Config().call.ignore_voice_calls is False
-    assert Config.from_mapping({"call": {"ignore_voice_calls": True}}).call.ignore_voice_calls
+    assert Config().call.voice_calls == "accept"
+
+
+@pytest.mark.parametrize("action", ["accept", "reject", "ignore"])
+def test_every_voice_call_action_is_accepted(action):
+    assert Config.from_mapping({"call": {"voice_calls": action}}).call.voice_calls == action
+
+
+def test_unknown_voice_call_action_is_rejected():
+    with pytest.raises(ConfigError, match=r"call\.voice_calls"):
+        Config.from_mapping({"call": {"voice_calls": "hang up"}})
 
 
 def test_unknown_section_is_rejected():

@@ -117,15 +117,14 @@ Two settings deserve a word:
   `4` tells the modem to read those calls as data, which is what makes such a
   SIM usable at all. If your SIM has a separate data number, the network signals
   the bearer itself and you can set this to `-1` to leave it alone.
-- **`call.ignore_voice_calls`** is off by default, so every incoming call is
-  answered, whatever the network signalled — which is how industrial CSD modems
-  behave, and the only thing that works on a SIM that signals data calls as
-  voice. A call that really is a voice call comes up without a data carrier; the
-  server notices, hangs up and goes back to waiting. Turn the flag on and calls
-  signalled as voice or fax are left ringing instead: the server neither answers
-  nor hangs up, so the caller hears the ringback and reaches voicemail, exactly
-  as they would on a module that is not answering. Hanging up on them would
-  instead tell the caller the line is busy.
+- **`call.voice_calls`** decides what happens to a call the network signalled as
+  voice or fax. `"accept"`, the default, answers it like any other call: that is
+  how industrial CSD modems behave, and the only thing that works on a SIM that
+  signals data calls as voice. A call that really is a voice call comes up
+  without a data carrier, and the server hangs up and goes back to waiting.
+  `"reject"` hangs up at once, so the caller hears the line as unavailable.
+  `"ignore"` neither answers nor hangs up: the caller keeps hearing the ringback
+  and reaches voicemail, exactly as on a module that is not answering.
 
 A `/dev/serial/by-id/...` path is worth preferring over `/dev/ttyUSB0`: it
 survives reboots and re-plugging, where the numbered device may not.
@@ -191,10 +190,9 @@ emulator is enough to see it working. `ATH`, or dropping DTR, ends the call.
    up, `ATS0=0` so the modem never answers on its own, plus `AT+CRC=1` and
    `AT+CLIP=1` for the extended ring report and the caller number.
 2. On `RING` or `+CRING:` the server collects the call details for a moment and
-   answers with `ATA` — unless `call.ignore_voice_calls` is on and the network
-   marked the call as voice or fax, in which case the ring reports are consumed
-   in silence until the caller gives up. A call answered without a data carrier
-   is hung up again.
+   answers with `ATA`, unless the network marked the call as voice or fax and
+   `call.voice_calls` says to reject it or to leave it ringing. A call answered
+   without a data carrier is hung up again.
 3. After `CONNECT` it sends the banner and echoes every byte it receives. Line
    endings are normalised to CRLF unless `echo.newline = "raw"`.
 4. The call ends when the carrier drops — detected on DCD where the cable

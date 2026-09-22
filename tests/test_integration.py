@@ -145,10 +145,22 @@ def test_server_answers_a_call_and_echoes_the_traffic(modem_and_server):
     wait_until(lambda: server.calls_answered == 2, "the second call to be counted")
 
 
+def test_voice_calls_can_be_rejected(modem_and_server):
+    modem, server = modem_and_server
+    wait_until(lambda: "ATI" in modem.commands, "the init sequence")
+    server.config.call.voice_calls = "reject"
+
+    modem.commands.clear()
+    modem.send(b"\r\n+CRING: VOICE\r\n")
+    wait_until(lambda: "ATH" in modem.commands, "the call to be rejected")
+    assert "ATA" not in modem.commands
+    assert server.calls_answered == 0
+
+
 def test_voice_calls_can_be_left_ringing(modem_and_server):
     modem, server = modem_and_server
     wait_until(lambda: "ATI" in modem.commands, "the init sequence")
-    server.config.call.ignore_voice_calls = True
+    server.config.call.voice_calls = "ignore"
 
     modem.commands.clear()
     for _ in range(3):
