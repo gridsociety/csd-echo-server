@@ -24,6 +24,11 @@ log = logging.getLogger(__name__)
 #: Emitted by the modem on the data line when the remote end hangs up.
 NO_CARRIER = b"NO CARRIER"
 
+#: A ring report arrives every few seconds, so this much silence means the
+#: caller has given up; RING_PATIENCE caps how long one ignored call can last.
+RING_GAP = 8.0
+RING_PATIENCE = 180.0
+
 
 def held_back(data: bytes) -> int:
     """Length of the trailing bytes of *data* that could start a NO CARRIER report.
@@ -116,9 +121,9 @@ class EchoServer:
                 continue
             log.info("incoming call: caller=%s type=%s", call.caller or "unknown",
                      call.bearer or "not signalled")
-            if self.config.call.reject_voice_calls and not call.is_data:
-                log.info("call signalled as %s, rejecting", call.bearer)
-                self.modem.hangup()
+            if self.config.call.ignore_voice_calls and not call.is_data:
+                log.info("call signalled as %s, letting it ring", call.bearer)
+                self._let_it_ring()
                 continue
             try:
                 self.modem.answer(call)
@@ -133,6 +138,21 @@ class EchoServer:
             finally:
                 self.modem.hangup()
                 log.info("call #%d ended, waiting for incoming CSD calls", self.calls_answered)
+
+    def _let_it_ring(self) -> None:
+        """Consume the ring reports of a call we neither answer nor hang up on.
+
+        Hanging up would tell the caller the line is busy; staying quiet lets the
+        network run the call out to voicemail on its own.
+        """
+        deadline = time.monotonic() + RING_PATIENCE
+        while not self.stop.is_set() and time.monotonic() < deadline:
+            line = self.modem.read_line(timeout=RING_GAP)
+            if line is None:  # the ringing stopped
+                return
+            log.debug("ignoring %s", line)
+            if line.startswith("NO CARRIER"):
+                return
 
     def _echo(self, call: IncomingCall) -> None:
         """Send the banner, then echo everything until the call ends."""

@@ -12,7 +12,7 @@ import time
 import pytest
 
 from csd_echo_server.config import Config
-from csd_echo_server.server import EchoServer
+from csd_echo_server.server import RING_GAP, EchoServer
 
 TIMEOUT = 15.0
 
@@ -145,13 +145,23 @@ def test_server_answers_a_call_and_echoes_the_traffic(modem_and_server):
     wait_until(lambda: server.calls_answered == 2, "the second call to be counted")
 
 
-def test_voice_calls_can_be_rejected(modem_and_server):
+def test_voice_calls_can_be_left_ringing(modem_and_server):
     modem, server = modem_and_server
     wait_until(lambda: "ATI" in modem.commands, "the init sequence")
-    server.config.call.reject_voice_calls = True
+    server.config.call.ignore_voice_calls = True
 
     modem.commands.clear()
-    modem.send(b"\r\n+CRING: VOICE\r\n")
-    wait_until(lambda: "ATH" in modem.commands, "the call to be rejected")
-    assert "ATA" not in modem.commands
+    for _ in range(3):
+        modem.send(b"\r\n+CRING: VOICE\r\n")
+        time.sleep(0.3)
+    time.sleep(2)
+    # Neither answered nor hung up: the caller keeps hearing the ringback.
+    assert modem.commands == []
     assert server.calls_answered == 0
+    assert modem.received == bytearray()
+
+    # The ringing stops, and a data call right after is still answered.
+    time.sleep(RING_GAP)
+    modem.send(b"\r\n+CRING: REL ASYNC\r\n")
+    wait_until(lambda: "ATA" in modem.commands, "the next data call to be answered")
+    wait_until(lambda: server.calls_answered == 1, "the data call to be counted")

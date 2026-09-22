@@ -55,10 +55,12 @@ class ModemConfig:
 class CallConfig:
     """Which calls are answered, and the limits applied once they are."""
 
-    #: Hang up on calls the network signalled as voice or fax instead of answering
-    #: them. Off by default: industrial CSD modems answer whatever comes in, which
-    #: is also what AT+CSNS is there to make possible.
-    reject_voice_calls: bool = False
+    #: Leave calls the network signalled as voice or fax ringing instead of
+    #: answering them: the server neither picks up nor hangs up, so the caller
+    #: hears the ringback and reaches voicemail as they would on a module that is
+    #: simply not answering. Off by default: industrial CSD modems answer whatever
+    #: comes in, which is also what AT+CSNS is there to make possible.
+    ignore_voice_calls: bool = False
     #: Hang up after this many seconds without data from the caller (0 disables).
     idle_timeout: float = 300.0
     #: Hang up after this many seconds regardless of activity (0 disables).

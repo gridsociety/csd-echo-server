@@ -45,11 +45,13 @@ port = "/dev/ttyUSB0"
 # retry_delay = 5.0
 
 [call]
-# Hang up on calls the network signalled as voice or fax instead of answering
-# them. Off by default, because a SIM without a separate data number signals CSD
-# calls as voice, and industrial CSD modems answer them anyway. Turn it on if the
-# number also receives ordinary voice calls that you would rather not pick up.
-# reject_voice_calls = false
+# Leave calls the network signalled as voice or fax ringing instead of answering
+# them: the server neither picks up nor hangs up, so the caller hears the
+# ringback and reaches voicemail, exactly as they would on a module that is not
+# answering. Off by default, because a SIM without a separate data number signals
+# CSD calls as voice and industrial CSD modems answer them anyway. Turn it on if
+# the number also receives ordinary voice calls that should be left alone.
+# ignore_voice_calls = false
 
 # Hang up after this many seconds without data from the caller. 0 disables it.
 # idle_timeout = 300.0

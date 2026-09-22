@@ -19,8 +19,8 @@ def test_from_mapping_overrides_only_what_is_given():
 
 
 def test_voice_calls_are_answered_by_default():
-    assert Config().call.reject_voice_calls is False
-    assert Config.from_mapping({"call": {"reject_voice_calls": True}}).call.reject_voice_calls
+    assert Config().call.ignore_voice_calls is False
+    assert Config.from_mapping({"call": {"ignore_voice_calls": True}}).call.ignore_voice_calls
 
 
 def test_unknown_section_is_rejected():
