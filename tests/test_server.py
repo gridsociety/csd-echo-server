@@ -1,4 +1,5 @@
 import threading
+from datetime import UTC, datetime
 
 from csd_echo_server.config import Config
 from csd_echo_server.modem import IncomingCall
@@ -54,8 +55,26 @@ def test_banner_contains_the_welcome_and_the_call_details():
     assert "+390123456789" in banner
     assert "REL ASYNC" in banner
     assert "CONNECT 9600/RLP" in banner
-    assert "9600 bps V.32, non-transparent" in banner
     assert "#3" in banner
+
+
+def test_call_summary_does_not_change_with_modem_or_server_configuration():
+    call = IncomingCall(caller="+390123456789", bearer="REL ASYNC",
+                        connect="CONNECT 9600/RLP")
+    now = datetime(2026, 9, 23, 9, 7, 22, tzinfo=UTC)
+    config = Config()
+    banner = render_banner(config, call, call_number=1, now=now)
+    config.modem.bearer = "71,0,1"
+    config.serial.baudrate = 19200
+    config.serial.rtscts = True
+    config.call.idle_timeout = 0
+    config.call.max_duration = 60
+    assert render_banner(config, call, call_number=1, now=now) == banner
+    for label in ("Bearer service", "Local link", "Idle timeout", "Call limit"):
+        assert label not in banner
+    assert "V.32" not in banner
+    assert "V.110" not in banner
+    assert "CONNECT 9600/RLP" in banner
 
 
 def test_banner_can_be_just_the_welcome_message():
@@ -66,9 +85,12 @@ def test_banner_can_be_just_the_welcome_message():
     assert banner.startswith("This is a CSD echo server.")
 
 
-def test_banner_names_what_the_network_did_not_signal():
+def test_banner_omits_unreported_call_details():
     banner = render_banner(Config(), IncomingCall(), call_number=1)
-    assert "withheld or not signalled" in banner
+    assert "Caller" not in banner
+    assert "Call type" not in banner
+    assert "Connection" not in banner
+    assert "#1" in banner
 
 
 def test_echo_sends_the_banner_then_repeats_the_input():

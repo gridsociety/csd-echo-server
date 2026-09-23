@@ -11,17 +11,21 @@ terminal settings are right, and that bytes survive the round trip.
 ```
 This is a CSD echo server.
 
-Call           : #1 at 2026-03-14 09:21:44 UTC
-Caller         : +390123456789
-Call type      : REL ASYNC
-Connection     : CONNECT 9600/RLP
-Bearer service : 9600 bps V.32, non-transparent
-Local link     : 115200 8N1
-Idle timeout   : 300 s
-Call limit     : 3600 s
+Call       : #1 at 2026-03-14 09:21:44 UTC
+Caller     : +390123456789
+Call type  : REL ASYNC
+Connection : CONNECT 9600/RLP
 
 Everything you send is echoed back. Hang up to end the call.
 ```
+
+The call summary contains the server's call number and UTC timestamp, plus only
+the details reported by the modem: caller number, incoming call type and the
+`CONNECT` response. Unreported details are omitted. Configured bearer settings,
+local serial parameters and timeout settings are not reported as call details.
+In particular, a configured `AT+CBST` value is not evidence of the negotiated
+bearer, and `REL ASYNC` or `CONNECT 9600/RLP` alone does not distinguish V.32
+from V.110.
 
 ## Requirements
 

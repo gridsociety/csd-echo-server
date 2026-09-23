@@ -16,7 +16,6 @@ from csd_echo_server.modem import (
     Modem,
     ModemError,
     NoDataCarrier,
-    describe_bearer,
 )
 
 log = logging.getLogger(__name__)
@@ -53,26 +52,18 @@ def render_banner(
     call_number: int,
     now: datetime | None = None,
 ) -> str:
-    """Build the welcome message the caller sees right after CONNECT."""
+    """Report observed call details, never configured modem or server settings."""
     timestamp = (now or datetime.now(UTC)).strftime("%Y-%m-%d %H:%M:%S UTC")
     lines = [config.echo.welcome.rstrip("\n")]
     if config.echo.show_call_info:
-        serial_line = (
-            f"{config.serial.baudrate} 8N1"
-            f"{' RTS/CTS' if config.serial.rtscts else ''}"
-        )
-        info = [
-            ("Call", f"#{call_number} at {timestamp}"),
-            ("Caller", call.caller or "withheld or not signalled"),
-            ("Call type", call.bearer or "not signalled"),
-            ("Connection", call.connect or "unknown"),
-            ("Bearer service", describe_bearer(config.modem.bearer)),
-            ("Local link", serial_line),
-        ]
-        if config.call.idle_timeout > 0:
-            info.append(("Idle timeout", f"{int(config.call.idle_timeout)} s"))
-        if config.call.max_duration > 0:
-            info.append(("Call limit", f"{int(config.call.max_duration)} s"))
+        info = [("Call", f"#{call_number} at {timestamp}")]
+        for label, value in (
+            ("Caller", call.caller),
+            ("Call type", call.bearer),
+            ("Connection", call.connect),
+        ):
+            if value:
+                info.append((label, value))
         width = max(len(label) for label, _ in info)
         lines.append("")
         lines.extend(f"{label.ljust(width)} : {value}" for label, value in info)

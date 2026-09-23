@@ -80,7 +80,7 @@ class EchoConfig:
     """What the caller sees once the call is up."""
 
     welcome: str = DEFAULT_WELCOME
-    #: Include the call/protocol summary after the welcome message.
+    #: Include call metadata and modem-reported details after the welcome message.
     show_call_info: bool = True
     #: "crlf" turns every incoming CR or LF into CRLF, which is what terminal
     #: programs expect; "raw" echoes the bytes exactly as received.

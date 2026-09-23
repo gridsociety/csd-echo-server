@@ -62,7 +62,8 @@ port = "/dev/ttyUSB0"
 
 [echo]
 welcome = "This is a CSD echo server."
-# Append the call and protocol summary below the welcome message.
+# Append call metadata and modem-reported details below the welcome message.
+# Unreported details are omitted; configured bearer/serial settings are not shown.
 # show_call_info = true
 # "crlf" turns every incoming line ending into CRLF, which is what terminal
 # programs expect. "raw" echoes the received bytes unchanged.
