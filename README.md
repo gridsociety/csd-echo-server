@@ -38,6 +38,11 @@ from V.110.
 - Read and write access to the serial device, which on most distributions means
   membership of the `dialout` group.
 
+The **Cinterion MC55i** (firmware **02.001**) is the modem used for development
+and hardware testing. Incoming CSD calls, modem-reported call details and
+bidirectional echo have been verified with this modem. Other AT-compatible
+modems may work, but have not been validated as receivers for this server.
+
 ## Install
 
 With [uv](https://docs.astral.sh/uv/), straight from a checkout:
